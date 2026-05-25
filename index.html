@@ -3,22 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculadora Cooper</title>
+<title>Calculadora do Corredor</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,sans-serif;background:#f4f6f8;min-height:100vh}
 .app{max-width:420px;margin:0 auto;padding:0 0 2rem}
-.header{background:#0F2027;padding:2rem 1.25rem 1.5rem;border-radius:0 0 20px 20px;margin-bottom:1.5rem}
+.header{background:#0F2027;padding:2rem 1.25rem 1rem;border-radius:0 0 20px 20px;margin-bottom:0}
 .header h1{color:#fff;font-size:20px;font-weight:500;margin-bottom:4px}
-.header p{color:rgba(255,255,255,0.6);font-size:13px}
-.section{padding:0 1rem;margin-bottom:1.25rem}
+.header p{color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:1rem}
+.tabs{display:flex;gap:0;background:#0F2027;padding:0 1rem 1rem}
+.tab{flex:1;padding:10px;text-align:center;font-size:13px;font-weight:500;border-radius:10px;cursor:pointer;color:rgba(255,255,255,0.5);transition:all .2s}
+.tab.active{background:#fff;color:#0F3460}
+.section{padding:1rem 1rem 0}
 .card{background:#fff;border:0.5px solid #dde3ea;border-radius:14px;padding:1rem 1.25rem;margin-bottom:1rem}
 .card-title{font-size:12px;font-weight:500;color:#8e9bad;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem}
 .field{margin-bottom:.75rem}
 .field label{display:block;font-size:13px;color:#555;margin-bottom:4px}
 .field input,.field select{width:100%;padding:10px 12px;border:1px solid #dde3ea;border-radius:8px;font-size:15px;background:#fff;color:#1a1a2e}
 .field input:focus,.field select:focus{outline:2px solid #378ADD;border-color:transparent}
-.btn{width:100%;padding:14px;background:#0F3460;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:500;cursor:pointer}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn{width:100%;padding:14px;background:#0F3460;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:500;cursor:pointer;margin-bottom:1rem}
 .btn:active{transform:scale(0.98)}
 .result-card{background:#fff;border:0.5px solid #dde3ea;border-radius:14px;overflow:hidden;margin-bottom:1rem}
 .result-hero{padding:1.25rem;text-align:center;border-bottom:0.5px solid #dde3ea}
@@ -48,139 +52,178 @@ body{font-family:system-ui,sans-serif;background:#f4f6f8;min-height:100vh}
 .zone-detail .tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:500;margin-bottom:.5rem}
 .zone-detail p{margin-bottom:.4rem}
 .zone-detail p:last-child{margin-bottom:0}
+.prova-result{background:#fff;border:0.5px solid #dde3ea;border-radius:14px;overflow:hidden;margin-bottom:1rem}
+.prova-hero{padding:1.5rem 1.25rem;text-align:center;border-bottom:0.5px solid #dde3ea}
+.prova-pace{font-size:52px;font-weight:500;color:#0F3460;line-height:1}
+.prova-pace-label{font-size:13px;color:#8e9bad;margin-top:4px}
+.prova-stats{display:grid;grid-template-columns:1fr 1fr 1fr}
+.prova-stat{padding:.875rem .5rem;text-align:center;border-top:0.5px solid #dde3ea}
+.prova-stat+.prova-stat{border-left:0.5px solid #dde3ea}
+.prova-stat-val{font-size:16px;font-weight:500;color:#0F3460;margin-bottom:2px}
+.prova-stat-lbl{font-size:10px;color:#8e9bad}
+.zona-destaque{margin:1rem;padding:1rem;border-radius:12px;text-align:center}
+.zona-destaque-label{font-size:12px;font-weight:500;margin-bottom:4px;opacity:.8}
+.zona-destaque-nome{font-size:18px;font-weight:500}
+.recomendacao{padding:1rem 1.25rem;background:#f8fafc;border-top:0.5px solid #dde3ea;font-size:13px;color:#444;line-height:1.7}
+.recomendacao strong{color:#0F3460}
+.recomendacao .aviso{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:500;margin-bottom:.5rem}
 .hidden{display:none}
-.tip{font-size:12px;color:#8e9bad;text-align:center;padding:0 1rem;line-height:1.6}
+.tip{font-size:12px;color:#8e9bad;text-align:center;padding:0 1rem 1rem;line-height:1.6}
+.page{display:none}
+.page.active{display:block}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="header">
-    <h1>🏃 Calculadora Cooper</h1>
-    <p>VO2máx · Classificação · Zonas de treino</p>
-  </div>
-  <div class="section">
-    <div class="card">
-      <div class="card-title">Seus dados</div>
-      <div class="field">
-        <label>Sexo</label>
-        <select id="sexo"><option value="M">Masculino</option><option value="F">Feminino</option></select>
-      </div>
-      <div class="field">
-        <label>Idade (anos)</label>
-        <input type="number" id="idade" value="30" min="15" max="80">
-      </div>
-      <div class="field">
-        <label>Distância percorrida em 12 min (metros)</label>
-        <input type="number" id="dist" value="2800" min="500" max="5000" placeholder="ex: 2800">
-      </div>
-      <div class="field">
-        <label>FC de repouso (bpm) <span style="color:#8e9bad;font-size:11px">opcional</span></label>
-        <input type="number" id="fcrep" value="60" min="35" max="100">
-      </div>
+    <h1>🏃 Calculadora do Corredor</h1>
+    <p>VO2máx · Zonas de treino · Prova alvo</p>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(0)">Teste de Cooper</div>
+      <div class="tab" onclick="switchTab(1)">Prova Alvo</div>
     </div>
-    <button class="btn" onclick="calcular()">Calcular</button>
   </div>
 
-  <div id="results" class="hidden section">
-    <div class="result-card">
-      <div class="result-hero">
-        <div class="vo2-num" id="vo2val">—</div>
-        <div class="vo2-label">VO2máx (ml/kg/min)</div>
-        <div id="badge" class="badge"></div>
-      </div>
-      <div id="vo2-info" class="vo2-info"></div>
-      <div class="stats-row">
-        <div class="stat">
-          <div class="stat-val" id="fcmax-val">—</div>
-          <div class="stat-lbl">FC Máxima</div>
+  <!-- ABA 1: COOPER -->
+  <div class="page active" id="page-0">
+    <div class="section">
+      <div class="card">
+        <div class="card-title">Seus dados</div>
+        <div class="field">
+          <label>Sexo</label>
+          <select id="sexo"><option value="M">Masculino</option><option value="F">Feminino</option></select>
         </div>
-        <div class="stat">
-          <div class="stat-val" id="fcres-val">—</div>
-          <div class="stat-lbl">FC Reserva</div>
+        <div class="field">
+          <label>Idade (anos)</label>
+          <input type="number" id="idade" value="30" min="15" max="80">
+        </div>
+        <div class="field">
+          <label>Distância percorrida em 12 min (metros)</label>
+          <input type="number" id="dist" value="2800" min="500" max="5000" placeholder="ex: 2800">
+        </div>
+        <div class="field">
+          <label>FC de repouso (bpm) <span style="color:#8e9bad;font-size:11px">opcional</span></label>
+          <input type="number" id="fcrep" value="60" min="35" max="100">
         </div>
       </div>
+      <button class="btn" onclick="calcular()">Calcular</button>
     </div>
 
-    <div class="zones-card">
-      <div class="zones-header">Zonas de treino — FC · toque para saber mais</div>
-      <div id="zonas-fc"></div>
+    <div id="results" class="hidden">
+      <div class="section">
+        <div class="result-card">
+          <div class="result-hero">
+            <div class="vo2-num" id="vo2val">—</div>
+            <div class="vo2-label">VO2máx (ml/kg/min)</div>
+            <div id="badge" class="badge"></div>
+          </div>
+          <div id="vo2-info" class="vo2-info"></div>
+          <div class="stats-row">
+            <div class="stat">
+              <div class="stat-val" id="fcmax-val">—</div>
+              <div class="stat-lbl">FC Máxima</div>
+            </div>
+            <div class="stat">
+              <div class="stat-val" id="fcres-val">—</div>
+              <div class="stat-lbl">FC Reserva</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="zones-card">
+          <div class="zones-header">Zonas de treino — FC · toque para saber mais</div>
+          <div id="zonas-fc"></div>
+        </div>
+
+        <div class="zones-card">
+          <div class="zones-header">Pace estimado por zona</div>
+          <div id="zonas-pace"></div>
+        </div>
+
+        <p class="tip">Baseado em Cooper (1968) · Karvonen · Daniels' Running Formula · ACSM</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABA 2: PROVA ALVO -->
+  <div class="page" id="page-1">
+    <div class="section">
+      <div class="card">
+        <div class="card-title">Dados da prova</div>
+        <div class="field">
+          <label>Distância da prova (km)</label>
+          <input type="number" id="prova-dist" placeholder="ex: 10" min="1" max="100" step="0.1">
+        </div>
+        <div class="field">
+          <label>Tempo alvo</label>
+          <div class="field-row">
+            <input type="number" id="prova-h" placeholder="horas" min="0" max="10">
+            <input type="number" id="prova-min" placeholder="minutos" min="0" max="59">
+          </div>
+        </div>
+        <div class="field">
+          <label>Seu VO2máx <span style="color:#8e9bad;font-size:11px">— calcule na aba Cooper</span></label>
+          <input type="number" id="prova-vo2" placeholder="ex: 51.3" step="0.1" min="10" max="90">
+        </div>
+      </div>
+      <button class="btn" onclick="calcularProva()">Calcular prova</button>
     </div>
 
-    <div class="zones-card">
-      <div class="zones-header">Pace estimado por zona</div>
-      <div id="zonas-pace"></div>
+    <div id="prova-results" class="hidden section">
+      <div class="prova-result">
+        <div class="prova-hero">
+          <div class="prova-pace" id="prova-pace-val">—</div>
+          <div class="prova-pace-label">pace necessário (min/km)</div>
+        </div>
+        <div class="prova-stats">
+          <div class="prova-stat">
+            <div class="prova-stat-val" id="prova-dist-val">—</div>
+            <div class="prova-stat-lbl">distância</div>
+          </div>
+          <div class="prova-stat">
+            <div class="prova-stat-val" id="prova-tempo-val">—</div>
+            <div class="prova-stat-lbl">tempo alvo</div>
+          </div>
+          <div class="prova-stat">
+            <div class="prova-stat-val" id="prova-vel-val">—</div>
+            <div class="prova-stat-lbl">velocidade</div>
+          </div>
+        </div>
+        <div id="zona-destaque" class="zona-destaque"></div>
+        <div id="prova-recomendacao" class="recomendacao"></div>
+      </div>
+      <p class="tip">Estimativa baseada na equação de Daniels · VO2 = 3,5 + 0,2 × v</p>
     </div>
-
-    <p class="tip">Baseado em Cooper (1968) · Karvonen · Daniels' Running Formula · ACSM</p>
   </div>
 </div>
 
 <script>
+let vo2Global=null;
+
 const ZONES=[
-  {
-    name:"Recuperação ativa",sub:"Z1",color:"#2980B9",lo:0.50,hi:0.60,plo:0.59,phi:0.65,
-    tag:"50–60% FC Máx",tagColor:"#2980B9",
-    desc:[
-      "A zona mais leve do treino. O objetivo aqui <strong>não é melhorar o condicionamento</strong>, mas acelerar a recuperação após treinos intensos.",
-      "O fluxo sanguíneo aumenta suavemente, eliminando resíduos metabólicos dos músculos sem gerar novo estresse.",
-      "<strong>Recomendação:</strong> use no dia seguinte a treinos duros, em caminhadas ou pedaladas leves. 20–40 min são suficientes.",
-      "<em>Referência: Daniels' Running Formula, Jack Daniels (2014)</em>"
-    ]
-  },
-  {
-    name:"Base aeróbica",sub:"Z2",color:"#27AE60",lo:0.60,hi:0.70,plo:0.65,phi:0.75,
-    tag:"60–70% FC Máx",tagColor:"#27AE60",
-    desc:[
-      "A zona mais importante para corredores de fundo. Treinar aqui desenvolve a <strong>base aeróbica</strong>: mitocôndrias, eficiência de gordura como combustível e resistência muscular.",
-      "Você deve conseguir manter uma conversa confortável. Se não consegue falar, está rápido demais.",
-      "<strong>Recomendação:</strong> 60–70% do volume semanal de treino deveria estar aqui. Corridas longas e fáceis.",
-      "<em>Referência: 80/20 Running, Matt Fitzgerald (2014) · ACSM Guidelines</em>"
-    ]
-  },
-  {
-    name:"Aeróbico moderado",sub:"Z3",color:"#F39C12",lo:0.70,hi:0.80,plo:0.75,phi:0.85,
-    tag:"70–80% FC Máx",tagColor:"#F39C12",
-    desc:[
-      "Zona de intensidade moderada-alta. Melhora o limiar aeróbico e a eficiência em paces de corrida de longa distância.",
-      "É a zona do <strong>\"meio-termo perigoso\"</strong>: cansa mais que Z2, mas não traz os benefícios de Z4. Use com critério.",
-      "<strong>Recomendação:</strong> no máximo 10–15% do volume semanal. Bom para rodagens em pace de prova de meia maratona.",
-      "<em>Referência: Daniels' Running Formula · Polarized Training, Seiler (2010)</em>"
-    ]
-  },
-  {
-    name:"Limiar anaeróbico",sub:"Z4",color:"#E67E22",lo:0.80,hi:0.90,plo:0.85,phi:0.95,
-    tag:"80–90% FC Máx",tagColor:"#E67E22",
-    desc:[
-      "O <strong>limiar anaeróbico</strong> é o ponto onde o lactato começa a se acumular mais rápido do que o corpo consegue remover. Treinar nessa zona empurra esse limite para cima.",
-      "É a intensidade típica de uma prova de 10km ou meia maratona bem treinada. Ritmo controlado, mas exigente.",
-      "<strong>Recomendação:</strong> 1–2 sessões por semana, 20–40 min no total nessa zona. Intervalos de 5–10 min ou tempo runs.",
-      "<em>Referência: Lactate Threshold Training, Janssen (2001) · ACSM</em>"
-    ]
-  },
-  {
-    name:"VO2máx / máximo",sub:"Z5",color:"#E74C3C",lo:0.90,hi:1.00,plo:0.95,phi:1.05,
-    tag:"90–100% FC Máx",tagColor:"#E74C3C",
-    desc:[
-      "Intensidade máxima. Aqui você treina diretamente o seu <strong>VO2máx</strong> — a capacidade máxima de utilizar oxigênio. É o que define o teto do seu desempenho aeróbico.",
-      "Só é possível sustentar por 30 segundos a 3 minutos. O desconforto é alto e a recuperação leva 48–72 horas.",
-      "<strong>Recomendação:</strong> 1 sessão por semana no máximo. Intervalos curtos: 400m, 600m, 800m em pace máximo sustentável. Volume total: 4–8 min nessa zona.",
-      "<em>Referência: Daniels' Running Formula · VO2max Intervals, Billat (2001)</em>"
-    ]
-  },
+  {name:"Recuperação ativa",sub:"Z1",color:"#2980B9",lo:0.50,hi:0.60,plo:0.59,phi:0.65,
+   tag:"50–60% FC Máx",tagColor:"#2980B9",
+   desc:["A zona mais leve do treino. O objetivo aqui <strong>não é melhorar o condicionamento</strong>, mas acelerar a recuperação após treinos intensos.","O fluxo sanguíneo aumenta suavemente, eliminando resíduos metabólicos dos músculos sem gerar novo estresse.","<strong>Recomendação:</strong> use no dia seguinte a treinos duros, em caminhadas ou pedaladas leves. 20–40 min são suficientes.","<em>Referência: Daniels' Running Formula, Jack Daniels (2014)</em>"]},
+  {name:"Base aeróbica",sub:"Z2",color:"#27AE60",lo:0.60,hi:0.70,plo:0.65,phi:0.75,
+   tag:"60–70% FC Máx",tagColor:"#27AE60",
+   desc:["A zona mais importante para corredores de fundo. Treinar aqui desenvolve a <strong>base aeróbica</strong>: mitocôndrias, eficiência de gordura como combustível e resistência muscular.","Você deve conseguir manter uma conversa confortável. Se não consegue falar, está rápido demais.","<strong>Recomendação:</strong> 60–70% do volume semanal de treino deveria estar aqui. Corridas longas e fáceis.","<em>Referência: 80/20 Running, Matt Fitzgerald (2014) · ACSM Guidelines</em>"]},
+  {name:"Aeróbico moderado",sub:"Z3",color:"#F39C12",lo:0.70,hi:0.80,plo:0.75,phi:0.85,
+   tag:"70–80% FC Máx",tagColor:"#F39C12",
+   desc:["Zona de intensidade moderada-alta. Melhora o limiar aeróbico e a eficiência em paces de corrida de longa distância.","É a zona do <strong>\"meio-termo perigoso\"</strong>: cansa mais que Z2, mas não traz os benefícios de Z4. Use com critério.","<strong>Recomendação:</strong> no máximo 10–15% do volume semanal. Bom para rodagens em pace de prova de meia maratona.","<em>Referência: Daniels' Running Formula · Polarized Training, Seiler (2010)</em>"]},
+  {name:"Limiar anaeróbico",sub:"Z4",color:"#E67E22",lo:0.80,hi:0.90,plo:0.85,phi:0.95,
+   tag:"80–90% FC Máx",tagColor:"#E67E22",
+   desc:["O <strong>limiar anaeróbico</strong> é o ponto onde o lactato começa a se acumular mais rápido do que o corpo consegue remover. Treinar nessa zona empurra esse limite para cima.","É a intensidade típica de uma prova de 10km ou meia maratona bem treinada. Ritmo controlado, mas exigente.","<strong>Recomendação:</strong> 1–2 sessões por semana, 20–40 min no total nessa zona. Intervalos de 5–10 min ou tempo runs.","<em>Referência: Lactate Threshold Training, Janssen (2001) · ACSM</em>"]},
+  {name:"VO2máx / máximo",sub:"Z5",color:"#E74C3C",lo:0.90,hi:1.00,plo:0.95,phi:1.05,
+   tag:"90–100% FC Máx",tagColor:"#E74C3C",
+   desc:["Intensidade máxima. Aqui você treina diretamente o seu <strong>VO2máx</strong> — a capacidade máxima de utilizar oxigênio. É o que define o teto do seu desempenho aeróbico.","Só é possível sustentar por 30 segundos a 3 minutos. O desconforto é alto e a recuperação leva 48–72 horas.","<strong>Recomendação:</strong> 1 sessão por semana no máximo. Intervalos curtos: 400m, 600m, 800m em pace máximo sustentável. Volume total: 4–8 min nessa zona.","<em>Referência: Daniels' Running Formula · VO2max Intervals, Billat (2001)</em>"]},
 ];
 
-function vo2Info(vo2, sexo, classe){
-  const elite = sexo==="M" ? 70 : 60;
-  const bom = sexo==="M" ? 52 : 45;
-  const textos = {
-    "Excelente": `Seu VO2máx de <strong>${vo2.toFixed(1)} ml/kg/min</strong> é excelente — nível de atleta competitivo. Seu sistema cardiovascular transporta e utiliza oxigênio com alta eficiência. Para continuar evoluindo, o foco deve ser qualidade dos treinos, periodização e recuperação.`,
-    "Muito bom": `Seu VO2máx de <strong>${vo2.toFixed(1)} ml/kg/min</strong> está em um nível muito bom. Você tem uma base aeróbica sólida e está acima da média da população. Com treino consistente em Z2 e sessões de limiar, ainda há espaço real de evolução.`,
-    "Bom": `Seu VO2máx de <strong>${vo2.toFixed(1)} ml/kg/min</strong> é bom — acima da média. Sua base aeróbica está construída, mas existe margem significativa de melhora. Priorize volume em Z2 e introduza gradualmente treinos de limiar.`,
-    "Regular": `Seu VO2máx de <strong>${vo2.toFixed(1)} ml/kg/min</strong> está na média. É um ponto de partida sólido. A boa notícia: o VO2máx responde bem ao treino — com consistência em 3–4 meses você já verá diferença mensurável.`,
-    "Fraco": `Seu VO2máx de <strong>${vo2.toFixed(1)} ml/kg/min</strong> indica que há bastante espaço de melhora. O mais importante agora é construir o hábito de treino aeróbico regular. Comece com corridas fáceis em Z2, 3x por semana, e aumente o volume progressivamente.`,
-    "Muito fraco": `Seu VO2máx de <strong>${vo2.toFixed(1)} ml/kg/min</strong> mostra que o condicionamento aeróbico ainda está em desenvolvimento — e isso é um ponto de partida, não um limite. Estudos mostram que iniciantes têm os maiores ganhos nas primeiras semanas de treino regular.`,
-  };
-  return textos[classe] || `VO2máx estimado: <strong>${vo2.toFixed(1)} ml/kg/min</strong>.`;
+function switchTab(i){
+  document.querySelectorAll(".tab").forEach((t,j)=>t.classList.toggle("active",i===j));
+  document.querySelectorAll(".page").forEach((p,j)=>p.classList.toggle("active",i===j));
+  if(i===1 && vo2Global){
+    document.getElementById("prova-vo2").value=vo2Global.toFixed(1);
+  }
 }
 
 function toPace(v){
@@ -200,11 +243,21 @@ function classif(vo2,sexo,idade){
   return{label:labels[i],color:colors[i]};
 }
 
+function vo2Info(vo2,sexo,classe){
+  const textos={
+    "Excelente":`Seu VO2máx de <strong>${vo2.toFixed(1)} ml/kg/min</strong> é excelente — nível de atleta competitivo. Seu sistema cardiovascular transporta e utiliza oxigênio com alta eficiência. Para continuar evoluindo, o foco deve ser qualidade dos treinos, periodização e recuperação.`,
+    "Muito bom":`Seu VO2máx de <strong>${vo2.toFixed(1)} ml/kg/min</strong> está em um nível muito bom. Você tem uma base aeróbica sólida e está acima da média da população. Com treino consistente em Z2 e sessões de limiar, ainda há espaço real de evolução.`,
+    "Bom":`Seu VO2máx de <strong>${vo2.toFixed(1)} ml/kg/min</strong> é bom — acima da média. Sua base aeróbica está construída, mas existe margem significativa de melhora. Priorize volume em Z2 e introduza gradualmente treinos de limiar.`,
+    "Regular":`Seu VO2máx de <strong>${vo2.toFixed(1)} ml/kg/min</strong> está na média. É um ponto de partida sólido. A boa notícia: o VO2máx responde bem ao treino — com consistência em 3–4 meses você já verá diferença mensurável.`,
+    "Fraco":`Seu VO2máx de <strong>${vo2.toFixed(1)} ml/kg/min</strong> indica que há bastante espaço de melhora. O mais importante agora é construir o hábito de treino aeróbico regular. Comece com corridas fáceis em Z2, 3x por semana, e aumente o volume progressivamente.`,
+    "Muito fraco":`Seu VO2máx de <strong>${vo2.toFixed(1)} ml/kg/min</strong> mostra que o condicionamento aeróbico ainda está em desenvolvimento — e isso é um ponto de partida, não um limite. Estudos mostram que iniciantes têm os maiores ganhos nas primeiras semanas de treino regular.`,
+  };
+  return textos[classe]||`VO2máx estimado: <strong>${vo2.toFixed(1)} ml/kg/min</strong>.`;
+}
+
 function toggleZone(id){
-  const detail=document.getElementById("detail-"+id);
-  const arrow=document.getElementById("arrow-"+id);
-  detail.classList.toggle("open");
-  arrow.classList.toggle("open");
+  document.getElementById("detail-"+id).classList.toggle("open");
+  document.getElementById("arrow-"+id).classList.toggle("open");
 }
 
 function calcular(){
@@ -216,6 +269,7 @@ function calcular(){
   const fcmax=220-idade;
   const fcres=fcmax-fcrep;
   const cl=classif(vo2,sexo,idade);
+  vo2Global=vo2;
 
   document.getElementById("vo2val").textContent=vo2.toFixed(1);
   document.getElementById("fcmax-val").textContent=fcmax+" bpm";
@@ -235,34 +289,79 @@ function calcular(){
     const fclo=Math.round(fcrep+z.lo*fcres);
     const fchi=Math.round(fcrep+z.hi*fcres);
     const descHtml=z.desc.map(d=>`<p>${d}</p>`).join("");
-    fcDiv.innerHTML+=`
-      <div class="zone-row">
-        <div class="zone-top" onclick="toggleZone(${i})">
-          <div class="zone-dot" style="background:${z.color}"></div>
-          <div class="zone-name">${z.name}<small>${z.sub}</small></div>
-          <div class="zone-range">${fclo}–${fchi} bpm</div>
-          <span class="zone-arrow" id="arrow-${i}">▼</span>
-        </div>
-        <div class="zone-detail" id="detail-${i}">
-          <span class="tag" style="background:${z.color}22;color:${z.color}">${z.tag}</span>
-          ${descHtml}
-        </div>
-      </div>`;
-
+    fcDiv.innerHTML+=`<div class="zone-row"><div class="zone-top" onclick="toggleZone(${i})"><div class="zone-dot" style="background:${z.color}"></div><div class="zone-name">${z.name}<small>${z.sub}</small></div><div class="zone-range">${fclo}–${fchi} bpm</div><span class="zone-arrow" id="arrow-${i}">▼</span></div><div class="zone-detail" id="detail-${i}"><span class="tag" style="background:${z.color}22;color:${z.color}">${z.tag}</span>${descHtml}</div></div>`;
     const vlo=Math.max(0.1,(z.plo*vo2-3.5)/0.2);
     const vhi=Math.max(0.1,(z.phi*vo2-3.5)/0.2);
-    paceDiv.innerHTML+=`
-      <div class="zone-row">
-        <div class="zone-top">
-          <div class="zone-dot" style="background:${z.color}"></div>
-          <div class="zone-name">${z.name}<small>${z.sub}</small></div>
-          <div class="zone-range">${toPace(vhi)}–${toPace(vlo)}/km</div>
-        </div>
-      </div>`;
+    paceDiv.innerHTML+=`<div class="zone-row"><div class="zone-top"><div class="zone-dot" style="background:${z.color}"></div><div class="zone-name">${z.name}<small>${z.sub}</small></div><div class="zone-range">${toPace(vhi)}–${toPace(vlo)}/km</div></div></div>`;
   });
 
   document.getElementById("results").classList.remove("hidden");
   window.scrollTo({top:document.getElementById("results").offsetTop,behavior:"smooth"});
+}
+
+function calcularProva(){
+  const distKm=parseFloat(document.getElementById("prova-dist").value)||0;
+  const horas=parseFloat(document.getElementById("prova-h").value)||0;
+  const mins=parseFloat(document.getElementById("prova-min").value)||0;
+  const vo2=parseFloat(document.getElementById("prova-vo2").value)||0;
+
+  if(!distKm||(!horas&&!mins)){alert("Preencha a distância e o tempo alvo.");return;}
+
+  const totalMin=horas*60+mins;
+  const velKmh=distKm/(totalMin/60);
+  const velMmin=velKmh*1000/60;
+  const paceTotal=totalMin/distKm;
+  const paceMin=Math.floor(paceTotal);
+  const paceSec=Math.round((paceTotal-paceMin)*60);
+  const paceStr=paceMin+":"+(paceSec<10?"0"+paceSec:paceSec);
+
+  const tempoH=Math.floor(totalMin/60);
+  const tempoM=Math.round(totalMin%60);
+  const tempoStr=(tempoH>0?tempoH+"h ":"")+tempoM+"min";
+
+  document.getElementById("prova-pace-val").textContent=paceStr;
+  document.getElementById("prova-dist-val").textContent=distKm+"km";
+  document.getElementById("prova-tempo-val").textContent=tempoStr;
+  document.getElementById("prova-vel-val").textContent=velKmh.toFixed(1)+"km/h";
+
+  let zonaIndex=4;
+  let recomendacao="";
+  const zdest=document.getElementById("zona-destaque");
+  const rec=document.getElementById("prova-recomendacao");
+
+  if(vo2>0){
+    const vo2noPace=3.5+0.2*velMmin;
+    const pct=vo2noPace/vo2;
+
+    if(pct<0.60){zonaIndex=0;}
+    else if(pct<0.70){zonaIndex=1;}
+    else if(pct<0.80){zonaIndex=2;}
+    else if(pct<0.90){zonaIndex=3;}
+    else{zonaIndex=4;}
+
+    const z=ZONES[zonaIndex];
+    zdest.style.background=z.color+"18";
+    zdest.innerHTML=`<div class="zona-destaque-label" style="color:${z.color}">Você correrá nessa zona</div><div class="zona-destaque-nome" style="color:${z.color}">${z.sub} — ${z.name}</div>`;
+
+    const pctStr=Math.round(pct*100);
+
+    const recomendacoes={
+      0:`<span class="aviso" style="background:#2980B920;color:#2980B9">Zona muito confortável</span><br>Com seu VO2máx de <strong>${vo2} ml/kg/min</strong>, esse pace exige apenas <strong>${pctStr}% do seu esforço máximo</strong>. Você terminará a prova sem dificuldade. Se quiser um desafio maior, considere aumentar o ritmo ou buscar uma distância mais longa.`,
+      1:`<span class="aviso" style="background:#27AE6020;color:#27AE60">Zona confortável</span><br>Esse pace está na sua <strong>zona de base aeróbica (${pctStr}% do VO2máx)</strong>. É um ritmo sustentável e seguro. Você conseguirá conversar durante a prova. Ideal para garantir uma boa experiência e terminar bem.`,
+      2:`<span class="aviso" style="background:#F39C1220;color:#F39C12">Zona moderada — atenção ao início</span><br>Você correrá a <strong>${pctStr}% do seu VO2máx</strong> — uma intensidade moderada-alta. O risco aqui é sair rápido demais nos primeiros quilômetros e pagar caro no final. <strong>Recomendação:</strong> comece 10–15 seg/km mais devagar que o pace alvo e acelere progressivamente.`,
+      3:`<span class="aviso" style="background:#E6722220;color:#E67E22">Zona do limiar — exige preparo</span><br>Esse pace coloca você a <strong>${pctStr}% do VO2máx</strong>, no limiar anaeróbico. É uma intensidade alta e sustentável apenas com boa preparação. <strong>Recomendação:</strong> inclua 1–2 sessões semanais de tempo run nesse ritmo por pelo menos 8 semanas antes da prova. Hidratação e gestão de pace são críticos.`,
+      4:`<span class="aviso" style="background:#E74C3C20;color:#E74C3C">Zona máxima — risco alto</span><br>Esse pace exige <strong>${pctStr}% do seu VO2máx</strong>. Para o seu nível atual, é um ritmo muito intenso para manter durante toda a prova. <strong>Recomendação:</strong> considere um tempo alvo mais conservador, ou aumente seu VO2máx com 3–4 meses de treino estruturado antes de tentar esse tempo.`,
+    };
+
+    rec.innerHTML=recomendacoes[zonaIndex];
+  } else {
+    zdest.style.background="#f0f2f4";
+    zdest.innerHTML=`<div class="zona-destaque-label" style="color:#8e9bad">Calcule seu VO2máx</div><div class="zona-destaque-nome" style="color:#555">Use a aba Cooper para ver sua zona</div>`;
+    rec.innerHTML=`<strong>Pace necessário: ${paceStr}/km</strong> para completar ${distKm}km em ${tempoStr}.<br><br>Preencha seu VO2máx acima (use a aba Cooper) para receber uma recomendação personalizada.`;
+  }
+
+  document.getElementById("prova-results").classList.remove("hidden");
+  window.scrollTo({top:document.getElementById("prova-results").offsetTop,behavior:"smooth"});
 }
 </script>
 </body>
