@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Calculadora Cooper</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,sans-serif;background:#f4f6f8;min-height:100vh}
@@ -26,19 +25,29 @@ body{font-family:system-ui,sans-serif;background:#f4f6f8;min-height:100vh}
 .vo2-num{font-size:48px;font-weight:500;line-height:1;margin-bottom:4px;color:#0F3460}
 .vo2-label{font-size:13px;color:#8e9bad}
 .badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:500;margin-top:.75rem}
+.vo2-info{padding:1rem 1.25rem;background:#f8fafc;border-top:0.5px solid #dde3ea;font-size:13px;color:#444;line-height:1.7}
+.vo2-info strong{color:#0F3460}
 .stats-row{display:grid;grid-template-columns:1fr 1fr}
-.stat{padding:.875rem 1rem;text-align:center}
+.stat{padding:.875rem 1rem;text-align:center;border-top:0.5px solid #dde3ea}
 .stat+.stat{border-left:0.5px solid #dde3ea}
 .stat-val{font-size:20px;font-weight:500;margin-bottom:2px;color:#0F3460}
 .stat-lbl{font-size:11px;color:#8e9bad}
 .zones-card{background:#fff;border:0.5px solid #dde3ea;border-radius:14px;overflow:hidden;margin-bottom:1rem}
 .zones-header{padding:.75rem 1rem;border-bottom:0.5px solid #dde3ea;font-size:12px;font-weight:500;color:#8e9bad;text-transform:uppercase;letter-spacing:.06em}
-.zone-row{display:flex;align-items:center;padding:.75rem 1rem;border-bottom:0.5px solid #dde3ea;gap:12px}
+.zone-row{border-bottom:0.5px solid #dde3ea}
 .zone-row:last-child{border-bottom:none}
+.zone-top{display:flex;align-items:center;padding:.75rem 1rem;gap:12px;cursor:pointer}
 .zone-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 .zone-name{flex:1;font-size:13px;color:#1a1a2e}
 .zone-name small{display:block;font-size:11px;color:#8e9bad;margin-top:1px}
-.zone-range{font-size:13px;font-weight:500;color:#1a1a2e}
+.zone-range{font-size:13px;font-weight:500;color:#1a1a2e;margin-right:8px}
+.zone-arrow{font-size:11px;color:#8e9bad;transition:transform .2s}
+.zone-arrow.open{transform:rotate(180deg)}
+.zone-detail{display:none;padding:.75rem 1rem 1rem;background:#f8fafc;border-top:0.5px solid #f0f2f4;font-size:13px;color:#444;line-height:1.7}
+.zone-detail.open{display:block}
+.zone-detail .tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:500;margin-bottom:.5rem}
+.zone-detail p{margin-bottom:.4rem}
+.zone-detail p:last-child{margin-bottom:0}
 .hidden{display:none}
 .tip{font-size:12px;color:#8e9bad;text-align:center;padding:0 1rem;line-height:1.6}
 </style>
@@ -71,6 +80,7 @@ body{font-family:system-ui,sans-serif;background:#f4f6f8;min-height:100vh}
     </div>
     <button class="btn" onclick="calcular()">Calcular</button>
   </div>
+
   <div id="results" class="hidden section">
     <div class="result-card">
       <div class="result-hero">
@@ -78,6 +88,7 @@ body{font-family:system-ui,sans-serif;background:#f4f6f8;min-height:100vh}
         <div class="vo2-label">VO2máx (ml/kg/min)</div>
         <div id="badge" class="badge"></div>
       </div>
+      <div id="vo2-info" class="vo2-info"></div>
       <div class="stats-row">
         <div class="stat">
           <div class="stat-val" id="fcmax-val">—</div>
@@ -89,30 +100,95 @@ body{font-family:system-ui,sans-serif;background:#f4f6f8;min-height:100vh}
         </div>
       </div>
     </div>
+
     <div class="zones-card">
-      <div class="zones-header">Zonas de treino — FC (Karvonen)</div>
+      <div class="zones-header">Zonas de treino — FC · toque para saber mais</div>
       <div id="zonas-fc"></div>
     </div>
+
     <div class="zones-card">
       <div class="zones-header">Pace estimado por zona</div>
       <div id="zonas-pace"></div>
     </div>
-    <p class="tip">Fórmula de Cooper (1968) · Método Karvonen · Equação de Daniels</p>
+
+    <p class="tip">Baseado em Cooper (1968) · Karvonen · Daniels' Running Formula · ACSM</p>
   </div>
 </div>
+
 <script>
 const ZONES=[
-  {name:"Recuperação ativa",sub:"Z1",color:"#2980B9",lo:0.50,hi:0.60,plo:0.59,phi:0.65},
-  {name:"Base aeróbica",sub:"Z2",color:"#27AE60",lo:0.60,hi:0.70,plo:0.65,phi:0.75},
-  {name:"Aeróbico moderado",sub:"Z3",color:"#F39C12",lo:0.70,hi:0.80,plo:0.75,phi:0.85},
-  {name:"Limiar anaeróbico",sub:"Z4",color:"#E67E22",lo:0.80,hi:0.90,plo:0.85,phi:0.95},
-  {name:"VO2máx / máximo",sub:"Z5",color:"#E74C3C",lo:0.90,hi:1.00,plo:0.95,phi:1.05},
+  {
+    name:"Recuperação ativa",sub:"Z1",color:"#2980B9",lo:0.50,hi:0.60,plo:0.59,phi:0.65,
+    tag:"50–60% FC Máx",tagColor:"#2980B9",
+    desc:[
+      "A zona mais leve do treino. O objetivo aqui <strong>não é melhorar o condicionamento</strong>, mas acelerar a recuperação após treinos intensos.",
+      "O fluxo sanguíneo aumenta suavemente, eliminando resíduos metabólicos dos músculos sem gerar novo estresse.",
+      "<strong>Recomendação:</strong> use no dia seguinte a treinos duros, em caminhadas ou pedaladas leves. 20–40 min são suficientes.",
+      "<em>Referência: Daniels' Running Formula, Jack Daniels (2014)</em>"
+    ]
+  },
+  {
+    name:"Base aeróbica",sub:"Z2",color:"#27AE60",lo:0.60,hi:0.70,plo:0.65,phi:0.75,
+    tag:"60–70% FC Máx",tagColor:"#27AE60",
+    desc:[
+      "A zona mais importante para corredores de fundo. Treinar aqui desenvolve a <strong>base aeróbica</strong>: mitocôndrias, eficiência de gordura como combustível e resistência muscular.",
+      "Você deve conseguir manter uma conversa confortável. Se não consegue falar, está rápido demais.",
+      "<strong>Recomendação:</strong> 60–70% do volume semanal de treino deveria estar aqui. Corridas longas e fáceis.",
+      "<em>Referência: 80/20 Running, Matt Fitzgerald (2014) · ACSM Guidelines</em>"
+    ]
+  },
+  {
+    name:"Aeróbico moderado",sub:"Z3",color:"#F39C12",lo:0.70,hi:0.80,plo:0.75,phi:0.85,
+    tag:"70–80% FC Máx",tagColor:"#F39C12",
+    desc:[
+      "Zona de intensidade moderada-alta. Melhora o limiar aeróbico e a eficiência em paces de corrida de longa distância.",
+      "É a zona do <strong>\"meio-termo perigoso\"</strong>: cansa mais que Z2, mas não traz os benefícios de Z4. Use com critério.",
+      "<strong>Recomendação:</strong> no máximo 10–15% do volume semanal. Bom para rodagens em pace de prova de meia maratona.",
+      "<em>Referência: Daniels' Running Formula · Polarized Training, Seiler (2010)</em>"
+    ]
+  },
+  {
+    name:"Limiar anaeróbico",sub:"Z4",color:"#E67E22",lo:0.80,hi:0.90,plo:0.85,phi:0.95,
+    tag:"80–90% FC Máx",tagColor:"#E67E22",
+    desc:[
+      "O <strong>limiar anaeróbico</strong> é o ponto onde o lactato começa a se acumular mais rápido do que o corpo consegue remover. Treinar nessa zona empurra esse limite para cima.",
+      "É a intensidade típica de uma prova de 10km ou meia maratona bem treinada. Ritmo controlado, mas exigente.",
+      "<strong>Recomendação:</strong> 1–2 sessões por semana, 20–40 min no total nessa zona. Intervalos de 5–10 min ou tempo runs.",
+      "<em>Referência: Lactate Threshold Training, Janssen (2001) · ACSM</em>"
+    ]
+  },
+  {
+    name:"VO2máx / máximo",sub:"Z5",color:"#E74C3C",lo:0.90,hi:1.00,plo:0.95,phi:1.05,
+    tag:"90–100% FC Máx",tagColor:"#E74C3C",
+    desc:[
+      "Intensidade máxima. Aqui você treina diretamente o seu <strong>VO2máx</strong> — a capacidade máxima de utilizar oxigênio. É o que define o teto do seu desempenho aeróbico.",
+      "Só é possível sustentar por 30 segundos a 3 minutos. O desconforto é alto e a recuperação leva 48–72 horas.",
+      "<strong>Recomendação:</strong> 1 sessão por semana no máximo. Intervalos curtos: 400m, 600m, 800m em pace máximo sustentável. Volume total: 4–8 min nessa zona.",
+      "<em>Referência: Daniels' Running Formula · VO2max Intervals, Billat (2001)</em>"
+    ]
+  },
 ];
+
+function vo2Info(vo2, sexo, classe){
+  const elite = sexo==="M" ? 70 : 60;
+  const bom = sexo==="M" ? 52 : 45;
+  const textos = {
+    "Excelente": `Seu VO2máx de <strong>${vo2.toFixed(1)} ml/kg/min</strong> é excelente — nível de atleta competitivo. Seu sistema cardiovascular transporta e utiliza oxigênio com alta eficiência. Para continuar evoluindo, o foco deve ser qualidade dos treinos, periodização e recuperação.`,
+    "Muito bom": `Seu VO2máx de <strong>${vo2.toFixed(1)} ml/kg/min</strong> está em um nível muito bom. Você tem uma base aeróbica sólida e está acima da média da população. Com treino consistente em Z2 e sessões de limiar, ainda há espaço real de evolução.`,
+    "Bom": `Seu VO2máx de <strong>${vo2.toFixed(1)} ml/kg/min</strong> é bom — acima da média. Sua base aeróbica está construída, mas existe margem significativa de melhora. Priorize volume em Z2 e introduza gradualmente treinos de limiar.`,
+    "Regular": `Seu VO2máx de <strong>${vo2.toFixed(1)} ml/kg/min</strong> está na média. É um ponto de partida sólido. A boa notícia: o VO2máx responde bem ao treino — com consistência em 3–4 meses você já verá diferença mensurável.`,
+    "Fraco": `Seu VO2máx de <strong>${vo2.toFixed(1)} ml/kg/min</strong> indica que há bastante espaço de melhora. O mais importante agora é construir o hábito de treino aeróbico regular. Comece com corridas fáceis em Z2, 3x por semana, e aumente o volume progressivamente.`,
+    "Muito fraco": `Seu VO2máx de <strong>${vo2.toFixed(1)} ml/kg/min</strong> mostra que o condicionamento aeróbico ainda está em desenvolvimento — e isso é um ponto de partida, não um limite. Estudos mostram que iniciantes têm os maiores ganhos nas primeiras semanas de treino regular.`,
+  };
+  return textos[classe] || `VO2máx estimado: <strong>${vo2.toFixed(1)} ml/kg/min</strong>.`;
+}
+
 function toPace(v){
   if(v<=0)return"--";
   const t=1000/v,m=Math.floor(t),s=Math.round((t-m)*60);
   return m+":"+(s<10?"0"+s:s);
 }
+
 function classif(vo2,sexo,idade){
   const m=[[25,33,43,52,61],[23,30,38,48,56],[20,26,35,45,54],[18,24,33,43,52],[16,22,30,40,49]];
   const f=[[24,30,37,45,54],[20,24,30,39,48],[17,20,24,30,38],[15,18,23,30,38],[13,16,20,26,35]];
@@ -123,6 +199,14 @@ function classif(vo2,sexo,idade){
   let i=0;for(;i<5;i++)if(vo2<t[i])break;
   return{label:labels[i],color:colors[i]};
 }
+
+function toggleZone(id){
+  const detail=document.getElementById("detail-"+id);
+  const arrow=document.getElementById("arrow-"+id);
+  detail.classList.toggle("open");
+  arrow.classList.toggle("open");
+}
+
 function calcular(){
   const dist=parseFloat(document.getElementById("dist").value)||0;
   const idade=parseFloat(document.getElementById("idade").value)||30;
@@ -132,24 +216,51 @@ function calcular(){
   const fcmax=220-idade;
   const fcres=fcmax-fcrep;
   const cl=classif(vo2,sexo,idade);
+
   document.getElementById("vo2val").textContent=vo2.toFixed(1);
   document.getElementById("fcmax-val").textContent=fcmax+" bpm";
   document.getElementById("fcres-val").textContent=fcres+" bpm";
+  document.getElementById("vo2-info").innerHTML=vo2Info(vo2,sexo,cl.label);
+
   const badge=document.getElementById("badge");
   badge.textContent=cl.label;
   badge.style.background=cl.color+"22";
   badge.style.color=cl.color;
+
   const fcDiv=document.getElementById("zonas-fc");
   const paceDiv=document.getElementById("zonas-pace");
   fcDiv.innerHTML="";paceDiv.innerHTML="";
-  ZONES.forEach(z=>{
+
+  ZONES.forEach((z,i)=>{
     const fclo=Math.round(fcrep+z.lo*fcres);
     const fchi=Math.round(fcrep+z.hi*fcres);
-    fcDiv.innerHTML+=`<div class="zone-row"><div class="zone-dot" style="background:${z.color}"></div><div class="zone-name">${z.name}<small>${z.sub}</small></div><div class="zone-range">${fclo}–${fchi} bpm</div></div>`;
+    const descHtml=z.desc.map(d=>`<p>${d}</p>`).join("");
+    fcDiv.innerHTML+=`
+      <div class="zone-row">
+        <div class="zone-top" onclick="toggleZone(${i})">
+          <div class="zone-dot" style="background:${z.color}"></div>
+          <div class="zone-name">${z.name}<small>${z.sub}</small></div>
+          <div class="zone-range">${fclo}–${fchi} bpm</div>
+          <span class="zone-arrow" id="arrow-${i}">▼</span>
+        </div>
+        <div class="zone-detail" id="detail-${i}">
+          <span class="tag" style="background:${z.color}22;color:${z.color}">${z.tag}</span>
+          ${descHtml}
+        </div>
+      </div>`;
+
     const vlo=Math.max(0.1,(z.plo*vo2-3.5)/0.2);
     const vhi=Math.max(0.1,(z.phi*vo2-3.5)/0.2);
-    paceDiv.innerHTML+=`<div class="zone-row"><div class="zone-dot" style="background:${z.color}"></div><div class="zone-name">${z.name}<small>${z.sub}</small></div><div class="zone-range">${toPace(vhi)}–${toPace(vlo)}/km</div></div>`;
+    paceDiv.innerHTML+=`
+      <div class="zone-row">
+        <div class="zone-top">
+          <div class="zone-dot" style="background:${z.color}"></div>
+          <div class="zone-name">${z.name}<small>${z.sub}</small></div>
+          <div class="zone-range">${toPace(vhi)}–${toPace(vlo)}/km</div>
+        </div>
+      </div>`;
   });
+
   document.getElementById("results").classList.remove("hidden");
   window.scrollTo({top:document.getElementById("results").offsetTop,behavior:"smooth"});
 }
